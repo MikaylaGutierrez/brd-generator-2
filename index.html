@@ -24,6 +24,7 @@
       max-width: 1200px;
       width: 100%;
       margin-top: 40px;
+      gap: 40px;
     }
 
     /* —— Sidebar —— */
@@ -321,6 +322,7 @@
       document.getElementById('entryForm').reset();
     });
 
+    // Submit Scoping Entries
     submitBtn.addEventListener('click', async () => {
       if (!entries.length) {
         alert('Please add at least one entry');
@@ -335,7 +337,7 @@
       };
 
       try {
-        const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-attempt2", {
+        const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-scoping", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(finalPayload)
@@ -353,6 +355,40 @@
       }
     });
 
+    // Submit Resolution Entries
+    document.getElementById('submitResBtn').addEventListener('click', async () => {
+      if (!entries.length) {
+        alert('Please add at least one entry');
+        return;
+      }
+
+      const step1Data = JSON.parse(sessionStorage.getItem("brdStep1") || "{}");
+
+      const finalPayload = {
+        ...step1Data,
+        entries
+      };
+
+      try {
+        const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-resolution", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(finalPayload)
+        });
+
+        const txt = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
+
+        alert("Submitted successfully!");
+        sessionStorage.clear(); // Cleanup
+        window.location.href = "/webhook/success"; // Optional redirect
+      } catch (err) {
+        console.error(err);
+        alert(`Submission failed: ${err.message}`);
+      }
+    });
+
+    // Back Button
     backBtn.addEventListener('click', () => {
       document.getElementById('step1').style.display = 'block';
       document.getElementById('step2').style.display = 'none';
