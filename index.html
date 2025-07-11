@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BRD Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* —— Reset / base —— */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,Arial,sans-serif;background:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+    h1{font-size:42px;font-weight:700;text-align:center;margin:80px 16px 48px;line-height:1.2}
+
+    /* —— Containers —— */
+    .flex{display:flex;gap:48px;flex-wrap:wrap;justify-content:center;width:100%;max-width:1040px}
+    .card{width:420px;border:1px solid #000;border-radius:20px;padding:40px;background:#fff}
+    .card h2{text-align:center;font-size:32px;font-weight:400;margin-bottom:32px}
+
+    label{display:block;font-size:16px;margin-top:16px;margin-bottom:8px;color:#1E1E1E}
+    input, select{width:100%;padding:12px 16px;font-size:14px;color:#1E1E1E;border:1px solid #D9D9D9;border-radius:8px;background:#fff}
+    input::placeholder{color:#757575}
+    select:invalid {color: #757575}
+
+    .btn{width:100%;margin-top:32px;padding:12px;font-size:24px;border:none;border-radius:8px;background:#2C2C2C;color:#F5F5F5;cursor:pointer;transition:opacity .2s}
+    .btn:hover{opacity:.9}
+
+    /* —— Added list —— */
+    .list{display:flex;flex-direction:column;gap:12px}
+    .list-item{padding:10px 12px;background:#E5E5E5;border-radius:6px;font-size:14px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .list-item.active{background:#C2C2C2}
+
+    /* Submit button */
+    #submitBtn{margin:48px auto 120px;width:320px;font-size:28px}
+
+    @media(max-width:480px){h1{font-size:28px;margin-top:40px}.card{width:90%;padding:24px}.btn,#submitBtn{font-size:20px}}
+  </style>
+</head>
+<body>
+  <h1>Business Requirements Document (BRD) Generator</h1>
+
+  <div class="flex">
+    <!-- Navigation Sidebar -->
+    <div style="flex: 1; background-color: #2C2C2C; color: white; padding: 20px;">
+      <h2>Navigation</h2>
+      <ul>
+        <li><a href="#" id="scopingTab">Scoping</a></li>
+        <li><a href="#" id="resolutionTab">Resolution</a></li>
+      </ul>
+    </div>
+
+    <!-- Step 1: BRD Form -->
+    <div class="card" id="step1">
+      <h2>Enter BRD Details</h2>
+      <form id="brdForm" autocomplete="off">
+        <label for="author">Author Name</label>
+        <input type="text" id="author" name="author_name" placeholder="Juan Dela Cruz" required />
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="juan.delacruz@achievewithoutborders.com" required />
+
+        <label for="title">Title (Client Name)</label>
+        <input type="text" id="title" name="client_title" placeholder="Dexterton" required />
+
+        <label for="full_name">Full Client Name</label>
+        <input type="text" id="full_name" name="client_full_name" placeholder="Dexterton Corporation" required />
+
+        <label for="industry">Industry</label>
+        <input type="text" id="industry" name="industry" placeholder="Home Retail" required />
+
+        <input type="hidden" name="version" id="version" value="v1.0" />
+        <input type="hidden" name="company" id="company" value="Achieve Without Borders, Inc." />
+        <input type="hidden" name="date" id="date" />
+
+        <button type="submit" class="btn">Next</button>
+      </form>
+    </div>
+
+    <!-- Step 2: Scoping Form -->
+    <div class="card" id="step2" style="display:none;">
+      <h2>Scoping Entries</h2>
+      <form id="entryForm" autocomplete="off">
+        <label for="docTitle">Document Title</label>
+        <input type="text" id="docTitle" name="document_title" placeholder="[DEXTERTON] Minutes of the Meeting (R2R)" required />
+
+        <label for="purpose">Purpose</label>
+        <input type="text" id="purpose" name="purpose" placeholder="Phase 4 Scoping interview" required />
+
+        <label for="cycle">Business Cycle</label>
+        <select id="cycle" name="business_cycle" required>
+          <option value="" disabled selected>Select a cycle</option>
+          <option value="Record-to-Report">Record-to-Report</option>
+          <option value="Order-to-Cash">Order-to-Cash</option>
+          <option value="Procure-to-Pay">Procure-to-Pay</option>
+          <option value="Hire-to-Retire">Inventory Management</option>
+        </select>
+
+        <label for="gdoc">Google Doc Link</label>
+        <input type="url" id="gdoc" name="gdoc_link" placeholder="https://docs.google.com/…" required />
+
+        <button class="btn" type="submit" id="addBtn">Add</button>
+      </form>
+
+      <div class="list" id="entriesList"></div>
+
+      <button class="btn" id="submitBtn">Submit</button>
+      <button class="btn" id="backBtn">Back</button>
+    </div>
+
+    <!-- Step 3: Resolution Form -->
+    <div class="card" id="step3" style="display:none;">
+      <h2>Resolution Entries</h2>
+      <form id="resolutionForm" autocomplete="off">
+        <label for="resDocTitle">Document Title</label>
+        <input type="text" id="resDocTitle" name="document_title" placeholder="[DEXTERTON] Minutes of the Meeting (R2R)" required />
+
+        <label for="issue">Issue</label>
+        <input type="text" id="issue" name="issue" placeholder="Describe the issue" required />
+
+        <label for="resolution">Resolution</label>
+        <input type="text" id="resolution" name="resolution" placeholder="Describe the resolution" required />
+
+        <button class="btn" type="submit" id="resAddBtn">Add</button>
+      </form>
+
+      <div class="list" id="resolutionList"></div>
+
+      <button class="btn" id="submitResBtn">Submit</button>
+    </div>
+  </div>
+
+  <script>
+    // Navigation
+    document.getElementById('scopingTab').addEventListener('click', () => {
+      document.getElementById('step1').style.display = 'block';
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('step3').style.display = 'none';
+    });
+
+    document.getElementById('resolutionTab').addEventListener('click', () => {
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('step3').style.display = 'block';
+    });
+
+    // Step 1 Form Handling
+    document.getElementById("date").value = new Date().toLocaleDateString("en-CA");
+    document.getElementById('brdForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = {
+        author_name: document.getElementById('author').value,
+        email: document.getElementById('email').value,
+        client_title: document.getElementById('title').value,
+        client_full_name: document.getElementById('full_name').value,
+        industry: document.getElementById('industry').value,
+        version: document.getElementById('version').value,
+        company: document.getElementById('company').value,
+        date: document.getElementById('date').value
+      };
+      sessionStorage.setItem("brdStep1", JSON.stringify(formData));
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+    });
+
+    // Step 2 Form Handling
+    const entries = [];
+    const listEl = document.getElementById('entriesList');
+    const submitBtn = document.getElementById('submitBtn');
+    const backBtn = document.getElementById('backBtn');
+
+    function renderList() {
+      listEl.innerHTML = '';
+      entries.forEach((e, idx) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.textContent = e.document_title;
+        div.dataset.index = idx;
+        listEl.appendChild(div);
+      });
+    }
+
+    document.getElementById('entryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newEntry = {
+        document_title: document.getElementById('docTitle').value.trim(),
+        purpose: document.getElementById('purpose').value.trim(),
+        business_cycle: document.getElementById('cycle').value.trim(),
+        gdoc_link: document.getElementById('gdoc').value.trim()
+      };
+      entries.push(newEntry);
+      renderList();
+      document.getElementById('entryForm').reset();
+    });
+
+    submitBtn.addEventListener('click', async () => {
+      if (!entries.length) {
+        alert('Please add at least one entry');
+        return;
+      }
+
+      const step1Data = JSON.parse(sessionStorage.getItem("brdStep1") || "{}");
+
+      const finalPayload = {
+        ...step1Data,
+        entries
+      };
+
+      try {
+        const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-attempt2", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(finalPayload)
+        });
+
+        const txt = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
+
+        alert("Submitted successfully!");
+        sessionStorage.clear(); // Cleanup
+        window.location.href = "/webhook/success"; // Optional redirect
+      } catch (err) {
+        console.error(err);
+        alert(`Submission failed: ${err.message}`);
+      }
+    });
+
+    backBtn.addEventListener('click', () => {
+      document.getElementById('step1').style.display = 'block';
+      document.getElementById('step2').style.display = 'none';
+    });
+
+    renderList();
+
+    // Step 3 Form Handling (Resolution)
+    const resolutionEntries = [];
+    const resolutionListEl = document.getElementById('resolutionList');
+    const submitResBtn = document.getElementById('submitResBtn');
+
+    function renderResolutionList() {
+      resolutionListEl.innerHTML = '';
+      resolutionEntries.forEach((e, idx) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.textContent = e.document_title;
+        div.dataset.index = idx;
+        resolutionListEl.appendChild(div);
+      });
+    }
+
+    document.getElementById('resolutionForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newEntry = {
+        document_title: document.getElementById('resDocTitle').value.trim(),
+        issue: document.getElementById('issue').value.trim(),
+        resolution: document.getElementById('resolution').value.trim()
+      };
+      resolutionEntries.push(newEntry);
+      renderResolutionList();
+      document.getElementById('resolutionForm').reset();
+    });
+
+    submitResBtn.addEventListener('click', async () => {
+      if (!resolutionEntries.length) {
+        alert('Please add at least one entry');
+        return;
+      }
+
+      const step1Data = JSON.parse(sessionStorage.getItem("brdStep1") || "{}");
+
+      const finalPayload = {
+        ...step1Data,
+        resolutionEntries
+      };
+
+      try {
+        const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/resolution-submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(finalPayload)
+        });
+
+        const txt = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
+
+        alert("Resolution submitted successfully!");
+        sessionStorage.clear(); // Cleanup
+        window.location.href = "/webhook/success"; // Optional redirect
+      } catch (err) {
+        console.error(err);
+        alert(`Submission failed: ${err.message}`);
+      }
+    });
+
+    renderResolutionList();
+  </script>
+</body>
+</html>
