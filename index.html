@@ -355,22 +355,29 @@
       }
     });
 
-    // Submit Resolution Entries
-    document.getElementById('submitResBtn').addEventListener('click', async (e) => {
-      e.preventDefault(); // Prevent form submission reload
+    // Resolution Entries Logic
+    const resolutionEntries = [];
+    const resolutionListEl = document.getElementById('resolutionList');
 
-      const resolutionEntries = [];
-      const resolutionListEl = document.getElementById('resolutionList');
+    // Add resolution entry to the list
+    document.getElementById('resolutionForm').addEventListener('submit', (e) => {
+      e.preventDefault(); // Prevent page reload
 
-      // Adding resolution entries to list
-      const resolutionData = {
+      const newResolution = {
         document_title: document.getElementById('resDocTitle').value.trim(),
         issue: document.getElementById('issue').value.trim(),
         resolution: document.getElementById('resolution').value.trim()
       };
-      resolutionEntries.push(resolutionData);
 
-      // Render list
+      resolutionEntries.push(newResolution);
+      renderResolutionList();
+
+      // Reset form fields
+      document.getElementById('resolutionForm').reset();
+    });
+
+    // Render the resolution entries in the list
+    function renderResolutionList() {
       resolutionListEl.innerHTML = '';
       resolutionEntries.forEach((entry, idx) => {
         const div = document.createElement('div');
@@ -379,13 +386,27 @@
         div.dataset.index = idx;
         resolutionListEl.appendChild(div);
       });
+    }
 
-      // Perform resolution submission
+    // Submit Resolution Entries
+    document.getElementById('submitResBtn').addEventListener('click', async () => {
+      if (!resolutionEntries.length) {
+        alert('Please add at least one entry');
+        return;
+      }
+
+      const step1Data = JSON.parse(sessionStorage.getItem("brdStep1") || "{}");
+
+      const finalPayload = {
+        ...step1Data,
+        resolutionEntries
+      };
+
       try {
         const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-resolution", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(resolutionData)
+          body: JSON.stringify(finalPayload)
         });
 
         const txt = await res.text();
@@ -407,7 +428,7 @@
       document.getElementById('progressText').textContent = "Step 1: Enter BRD Details";
     });
 
-    renderList();
+    renderResolutionList();
   </script>
 </body>
 </html>
