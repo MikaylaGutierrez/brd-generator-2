@@ -356,30 +356,42 @@
     });
 
     // Submit Resolution Entries
-    document.getElementById('submitResBtn').addEventListener('click', async () => {
-      if (!entries.length) {
-        alert('Please add at least one entry');
-        return;
-      }
+    document.getElementById('submitResBtn').addEventListener('click', async (e) => {
+      e.preventDefault(); // Prevent form submission reload
 
-      const step1Data = JSON.parse(sessionStorage.getItem("brdStep1") || "{}");
+      const resolutionEntries = [];
+      const resolutionListEl = document.getElementById('resolutionList');
 
-      const finalPayload = {
-        ...step1Data,
-        entries
+      // Adding resolution entries to list
+      const resolutionData = {
+        document_title: document.getElementById('resDocTitle').value.trim(),
+        issue: document.getElementById('issue').value.trim(),
+        resolution: document.getElementById('resolution').value.trim()
       };
+      resolutionEntries.push(resolutionData);
 
+      // Render list
+      resolutionListEl.innerHTML = '';
+      resolutionEntries.forEach((entry, idx) => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.textContent = entry.document_title;
+        div.dataset.index = idx;
+        resolutionListEl.appendChild(div);
+      });
+
+      // Perform resolution submission
       try {
         const res = await fetch("https://sol-n8n.achievewithoutborders.com/webhook-test/brd-submit-resolution", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(finalPayload)
+          body: JSON.stringify(resolutionData)
         });
 
         const txt = await res.text();
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
 
-        alert("Submitted successfully!");
+        alert("Resolution submitted successfully!");
         sessionStorage.clear(); // Cleanup
         window.location.href = "/webhook/success"; // Optional redirect
       } catch (err) {
